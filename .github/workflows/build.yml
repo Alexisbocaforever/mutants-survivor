@@ -35,8 +35,13 @@ jobs:
           qmake MutantsSurvivor.pro
           mingw32-make release
 
-      - name: Subir el ejecutable
+      - name: Empaquetar dependencias de Qt
+        shell: pwsh
+        run: |
+          windeployqt --release release\MutantsSurvivor.exe
+
+      - name: Subir el ejecutable con sus DLLs
         uses: actions/upload-artifact@v4
         with:
           name: MutantsSurvivor
-          path: release/MutantsSurvivor.exe
+          path: release/
