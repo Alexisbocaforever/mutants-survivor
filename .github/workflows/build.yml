@@ -13,15 +13,24 @@ jobs:
       - name: Descargar el codigo
         uses: actions/checkout@v4
 
-      - name: Instalar Qt
+      - name: Instalar Qt y su MinGW propio
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.7.0'
           host: 'windows'
           target: 'desktop'
           arch: 'win64_mingw'
+          tools: 'tools_mingw1310'
+          set-env: true
+
+      - name: Usar el MinGW de Qt en vez del del sistema
+        shell: pwsh
+        run: |
+          $mingwPath = "${{ github.workspace }}\..\Qt\Tools\mingw1310_64\bin"
+          echo "$mingwPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Compilar
+        shell: pwsh
         run: |
           qmake MutantsSurvivor.pro
           mingw32-make release
