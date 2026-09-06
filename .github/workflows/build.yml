@@ -55,7 +55,7 @@ jobs:
       - name: Ver que versiones de Qt Wasm existen
         run: |
           pip install aqtinstall
-          python -m aqt list-qt linux wasm
+          python -m aqt list-qt all_os wasm
 
       - name: Instalar Emscripten
         uses: mymindstorm/setup-emsdk@v14
@@ -67,7 +67,7 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.7.3'
-          host: 'linux'
+          host: 'all_os'
           target: 'wasm'
           arch: 'wasm_singlethread'
 
