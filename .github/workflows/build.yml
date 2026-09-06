@@ -61,7 +61,7 @@ jobs:
         uses: mymindstorm/setup-emsdk@v14
         with:
           version: '3.1.50'
-          actions-cache-folder: 'emsdk-cache'
+          actions-cache-folder: 'emsdk-cache-v2'
 
       - name: Instalar Qt para WebAssembly
         uses: jurplel/install-qt-action@v4
