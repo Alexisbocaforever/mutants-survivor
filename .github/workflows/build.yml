@@ -10,8 +10,16 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
+         steps:
       - name: Descargar el codigo
         uses: actions/checkout@v4
+
+      - name: Ver que versiones de Qt Wasm existen
+        run: |
+          pip install aqtinstall
+          python -m aqt list-qt linux wasm
+
+      - name: Instalar Emscripten
 
       - name: Instalar Qt y su MinGW propio
         uses: jurplel/install-qt-action@v4
