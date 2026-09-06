@@ -1,4 +1,4 @@
-name: Build Windows
+name: Build Windows and Web
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
     steps:
       - name: Descargar el codigo
@@ -43,5 +43,54 @@ jobs:
       - name: Subir el ejecutable con sus DLLs
         uses: actions/upload-artifact@v4
         with:
-          name: MutantsSurvivor
+          name: MutantsSurvivor-Windows
           path: release/
+
+  build-wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: '3.1.37'
+          actions-cache-folder: 'emsdk-cache'
+
+      - name: Instalar Qt para WebAssembly
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.7.0'
+          host: 'linux'
+          target: 'wasm'
+          arch: 'wasm_singlethread'
+
+      - name: Compilar para WebAssembly
+        shell: bash
+        run: |
+          qmake MutantsSurvivor.pro -spec wasm-emscripten CONFIG+=release
+          make -j$(nproc)
+
+      - name: Preparar carpeta para itch.io
+        shell: bash
+        run: |
+          mkdir -p wasm-build
+          cp MutantsSurvivor.html wasm-build/index.html
+          cp MutantsSurvivor.js wasm-build/
+          cp MutantsSurvivor.wasm wasm-build/
+          cp MutantsSurvivor.data wasm-build/ 2>/dev/null || true
+          cp qtloader.js wasm-build/ 2>/dev/null || true
+          cp qtlogo.svg wasm-build/ 2>/dev/null || true
+
+      - name: Empaquetar en zip
+        shell: bash
+        run: |
+          cd wasm-build
+          zip -r ../MutantsSurvivor-Web.zip .
+
+      - name: Subir el paquete web
+        uses: actions/upload-artifact@v4
+        with:
+          name: MutantsSurvivor-Web
+          path: MutantsSurvivor-Web.zip
