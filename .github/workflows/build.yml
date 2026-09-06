@@ -10,7 +10,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-         steps:
+        
       - name: Descargar el codigo
         uses: actions/checkout@v4
 
