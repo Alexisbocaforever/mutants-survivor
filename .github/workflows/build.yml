@@ -61,7 +61,7 @@ jobs:
       - name: Instalar Qt para WebAssembly
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.7.0'
+          version: '6.7.3'
           host: 'linux'
           target: 'wasm'
           arch: 'wasm_singlethread'
