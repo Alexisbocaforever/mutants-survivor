@@ -4,7 +4,7 @@ build-wasm:
       - name: Descargar el codigo
         uses: actions/checkout@v4
 
-      # 1. Instalar Qt primero para que sus scripts no sobrescriban Emscripten
+      # 1. Instalar Qt WebAssembly primero
       - name: Instalar Qt para WebAssembly
         uses: jurplel/install-qt-action@v4
         with:
@@ -13,14 +13,14 @@ build-wasm:
           target: 'wasm'
           arch: 'wasm_singlethread'
 
-      # 2. Configurar la versión exacta de Emscripten requerida por Qt 6.7.3
+      # 2. Configurar la versión correcta de Emscripten (3.1.50) después de Qt
       - name: Instalar Emscripten
         uses: mymindstorm/setup-emsdk@v14
         with:
           version: '3.1.50'
           actions-cache-folder: 'emsdk-cache-v2'
 
-      # 3. Compilar limitando los hilos a 2 para evitar errores de memoria (OOM)
+      # 3. Compilar usando un máximo de 2 hilos para no agotar la RAM
       - name: Compilar para WebAssembly
         shell: bash
         run: |
