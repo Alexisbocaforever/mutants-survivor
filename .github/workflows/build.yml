@@ -1,51 +1,47 @@
-build-wasm:
-    runs-on: ubuntu-latest
+name: Build Windows
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
     steps:
       - name: Descargar el codigo
         uses: actions/checkout@v4
 
-      # 1. Instalar Qt WebAssembly primero
-      - name: Instalar Qt para WebAssembly
+      - name: Instalar Qt y su MinGW propio
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.7.3'
-          host: 'all_os'
-          target: 'wasm'
-          arch: 'wasm_singlethread'
+          version: '6.7.0'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_mingw'
+          tools: 'tools_mingw1310'
+          set-env: true
 
-      # 2. Configurar la versión correcta de Emscripten (3.1.50) después de Qt
-      - name: Instalar Emscripten
-        uses: mymindstorm/setup-emsdk@v14
-        with:
-          version: '3.1.50'
-          actions-cache-folder: 'emsdk-cache-v2'
-
-      # 3. Compilar usando un máximo de 2 hilos para no agotar la RAM
-      - name: Compilar para WebAssembly
-        shell: bash
+      - name: Usar el MinGW de Qt en vez del del sistema
+        shell: pwsh
         run: |
-          qmake MutantsSurvivor.pro -spec wasm-emscripten CONFIG+=release
-          make -j2
+          $mingwPath = "${{ github.workspace }}\..\Qt\Tools\mingw1310_64\bin"
+          echo "$mingwPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name: Preparar carpeta para itch.io
-        shell: bash
+      - name: Compilar
+        shell: pwsh
         run: |
-          mkdir -p wasm-build
-          cp MutantsSurvivor.html wasm-build/index.html
-          cp MutantsSurvivor.js wasm-build/
-          cp MutantsSurvivor.wasm wasm-build/
-          cp MutantsSurvivor.data wasm-build/ 2>/dev/null || true
-          cp qtloader.js wasm-build/ 2>/dev/null || true
-          cp qtlogo.svg wasm-build/ 2>/dev/null || true
+          qmake MutantsSurvivor.pro
+          mingw32-make release
 
-      - name: Empaquetar en zip
-        shell: bash
+      - name: Empaquetar dependencias de Qt
+        shell: pwsh
         run: |
-          cd wasm-build
-          zip -r ../MutantsSurvivor-Web.zip .
+          windeployqt --release release\MutantsSurvivor.exe
 
-      - name: Subir el paquete web
+      - name: Subir el ejecutable con sus DLLs
         uses: actions/upload-artifact@v4
         with:
-          name: MutantsSurvivor-Web
-          path: MutantsSurvivor-Web.zip
+          name: MutantsSurvivor
+          path: release/
